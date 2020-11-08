@@ -39,15 +39,15 @@ Usage: -entropy-available [OPTION]...
 Determines if enough entropy bits are available perform a non-blocking read from /dev/random. Exit code 1 indicates entropy pool is not sufficiently filled.
 
 Options:
-    --help 
+    --help
         Prints this help.
-    --selftest 
+    --selftest
         Performs a self-test.
     --
         Terminates the option list.
 
 Examples:
-$ -entropy-available 
+$ -entropy-available
 /proc/sys/kernel/random/entropy_avail: 64
 /proc/sys/kernel/random/read_wakeup_threshold: 2429
 ```
@@ -83,15 +83,15 @@ Parameters:
       Number of seconds the entropy pool will be filled.
 
 Options:
-    --help 
+    --help
         Prints this help.
-    --selftest 
+    --selftest
         Performs a self-test.
     --
         Terminates the option list.
 
 Examples:
-$ -fill-entropy 
+$ -fill-entropy
 Available entropy bits before: 1000
 Generating for 1 second(s)...
 Available entropy bits after: 1013
@@ -130,9 +130,9 @@ Parameters:
       The numeric range LOW-HIGH, e.g. 1-5.
 
 Options:
-    --help 
+    --help
         Prints this help.
-    --selftest 
+    --selftest
         Performs a self-test.
     --
         Terminates the option list.
@@ -166,9 +166,9 @@ Parameters:
       String to choose random characters from.
 
 Options:
-    --help 
+    --help
         Prints this help.
-    --selftest 
+    --selftest
         Performs a self-test.
     --
         Terminates the option list.
@@ -187,7 +187,7 @@ $ -random-string 10 [:alnum:][:punct:]
 *Implementation:*
 ```bash
 local rc
-env LC_CTYPE=C tr -dc "$_CHARS" < /dev/urandom | fold -w ${_LENGTH} | head -n 1
+env LC_CTYPE=C tr -dc "$_CHARS" < /dev/urandom | head -c ${_LENGTH}
 
 # https://stackoverflow.com/questions/19120263/why-exit-code-141-with-grep-q
 rc=$?
@@ -203,9 +203,9 @@ Usage: -test-random [OPTION]...
 Performs a selftest of all functions of this module by executing each function with option '--selftest'.
 
 Options:
-    --help 
+    --help
         Prints this help.
-    --selftest 
+    --selftest
         Performs a self-test.
     --
         Terminates the option list.
