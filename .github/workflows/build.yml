@@ -15,16 +15,16 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: ubuntu-20.04
-          experimental: false
-        - os: ubuntu-18.04
-          experimental: false
+        #- os: ubuntu-20.04
+        #  experimental: false
+        #- os: ubuntu-18.04
+        #  experimental: false
         - os: ubuntu-16.04
           experimental: false
-        - os: macos-11.0
-          experimental: true
-        - os: macos-10.15
-          experimental: true
+        #- os: macos-11.0
+        #  experimental: true
+        #- os: macos-10.15
+        #  experimental: true
     steps:
     - name: Git Checkout
       uses: actions/checkout@v2 #https://github.com/actions/checkout
@@ -32,16 +32,84 @@ jobs:
     - name: Print Bash version
       run: bash --version
 
-    - name: Install bc, haveged
+    - name: Install bc, rng-tools
       if: startsWith(matrix.os, 'ubuntu')
-      run: sudo apt-get --no-install-recommends install -y bc haveged
+      run: sudo apt-get --no-install-recommends install -y bc rng-tools
 
-    - name: Foo
-      run: tr -dc "0-9" < /dev/urandom | head -c 12
+    - name: Configure local SSH
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        sudo apt-get -y install openssh-server
+        ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N foobar
+        cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+        ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
+
+        chmod 600 ~/.ssh/*
+        chmod 700 ~/.ssh
+        sudo chmod -c 0755 ~/
+
+        sudo sed -i 's/LogLevel INFO/LogLevel DEBUG/g' /etc/ssh/sshd_config
+
+        cat <<EOF | sudo tee -a /etc/ssh/sshd_config > /dev/null
+        PubkeyAuthentication yes
+        AuthorizedKeysFile %h/.ssh/authorized_keys
+        PermitTTY yes
+        EOF
+
+        echo ""
+        echo "###############################################"
+        echo "ls -la ~"
+        echo "###############################################"
+        ls -la ~
+
+        echo ""
+        echo "###############################################"
+        echo "ls -laR ~/.ssh"
+        echo "###############################################"
+        ls -la ~/.ssh
+
+        echo ""
+        echo "###############################################"
+        echo "systemctl restart ssh"
+        echo "###############################################"
+        sudo systemctl restart ssh
+
+        echo ""
+        echo "###############################################"
+        echo "cat /etc/ssh/sshd_config"
+        echo "###############################################"
+        cat /etc/ssh/sshd_config
+
+        echo ""
+        echo "###############################################"
+        echo "cat /etc/ssh/ssh_config"
+        echo "###############################################"
+        cat /etc/ssh/ssh_config
+
+    - name: Test SSH connection to localhost
+      run: |
+        ssh -vvv -i ~/.ssh/id_rsa \
+          -A \
+          -o BatchMode=yes \
+          -o PreferredAuthentications=publickey \
+          -o StrictHostKeyChecking=no \
+          -o PasswordAuthentication=no \
+          -tt \
+          $(whoami)@localhost \
+           "whoami" || true
+
+        sleep 5
+
+        echo ""
+        echo "###############################################"
+        echo "sshd log"
+        echo "###############################################"
+        grep 'sshd' /var/log/auth.log
 
     - name: Test bash-funk
       shell: bash
+      env:
+        TERM: xterm
       run: |
-        export TERM=xterm
         source bash-funk.sh
         -test-all
