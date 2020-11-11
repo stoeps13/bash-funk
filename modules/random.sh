@@ -609,7 +609,7 @@ function __impl-random-string() {
 
 ####### random-string ####### START
 local rc
-env LC_CTYPE=C echo "abcdefghijklmnopqrstuvwxyz" | tr -dc "$_CHARS" | head -c ${_LENGTH}
+env LC_CTYPE=C echo "012345678901234567890123456789" | tr -dc "$_CHARS" | head -c ${_LENGTH}
 
 # https://stackoverflow.com/questions/19120263/why-exit-code-141-with-grep-q
 rc=$?
