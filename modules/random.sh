@@ -609,7 +609,9 @@ function __impl-random-string() {
 
 ####### random-string ####### START
 local rc
-env LC_CTYPE=C tr -dc "$_CHARS" < $(/dev/urandom | head -c ${_LENGTH})
+whoami
+ls -al /dev/urandom
+env LC_CTYPE=C tr -dc "$_CHARS" < /dev/urandom | head -c ${_LENGTH}
 
 # https://stackoverflow.com/questions/19120263/why-exit-code-141-with-grep-q
 rc=$?
